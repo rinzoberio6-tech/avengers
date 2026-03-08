@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h3 class="fw-bold mb-0">Consultation History</h3>
+        <p class="text-muted small mb-0">Review all medical checkups and diagnostic records.</p>
+    </div>
+    <div class="col-md-6">
+        <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border">
+            <span class="input-group-text bg-white border-0 ps-4">
+                <i class="fas fa-search text-primary"></i>
+            </span>
+            <input type="text" id="consultationSearch" class="form-control border-0 py-3 shadow-none" placeholder="Search by patient, complaints, staff...">
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Date & Time</th>
+                        <th>Patient Name</th>
+                        <th>Complaints</th>
+                        <th>Diagnosis</th>
+                        <th class="pe-4">Attending Staff</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in consultations %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">{{ record.date.strftime('%b %d, %Y') }}</div>
+                            <small class="text-muted">{{ record.date.strftime('%I:%M %p') }}</small>
+                        </td>
+                        <td class="fw-bold text-primary">{{ record.patient.full_name }}</td>
+                        <td class="small">{{ record.complaints|truncate(60) }}</td>
+                        <td>
+                            <span class="badge bg-info-subtle text-info rounded-pill px-3">{{ record.diagnosis|truncate(40) if record.diagnosis else 'No Diagnosis' }}</span>
+                        </td>
+                        <td class="pe-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-md me-2 text-muted"></i>
+                                <span class="small fw-bold">{{ record.created_by or 'Unknown' }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fas fa-notes-medical fa-3x mb-3 opacity-25"></i>
+                            <p>No consultation records found.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('consultationSearch').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            if (row.cells.length < 5) return; // Skip empty message row
+            
+            const date = row.cells[0].innerText.toLowerCase();
+            const name = row.cells[1].innerText.toLowerCase();
+            const complaints = row.cells[2].innerText.toLowerCase();
+            const diagnosis = row.cells[3].innerText.toLowerCase();
+            const staff = row.cells[4].innerText.toLowerCase();
+
+            if (name.includes(searchTerm) || complaints.includes(searchTerm) || 
+                diagnosis.includes(searchTerm) || staff.includes(searchTerm) || date.includes(searchTerm)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+</script>
+
+<style>
+    .fw-bold { font-weight: 700; }
+</style>
+{% endblock %}

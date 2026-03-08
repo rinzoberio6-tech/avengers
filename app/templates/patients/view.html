@@ -1,0 +1,174 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('patients.list_patients') }}" class="text-decoration-none">Residents</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Profile</li>
+            </ol>
+        </nav>
+        <h4 class="fw-bold mb-0">Resident Profile</h4>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+            <div class="bg-primary py-4 text-center">
+                <div class="icon-box bg-white text-primary rounded-circle mx-auto d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px;">
+                    <i class="fas fa-user fa-2x"></i>
+                </div>
+            </div>
+            <div class="card-body text-center pt-4">
+                <h4 class="fw-bold mb-1">{{ patient.full_name }}</h4>
+                <p class="text-muted small mb-4">{{ patient.sex }} • {{ patient.birthdate.strftime('%B %d, %Y') }}</p>
+                
+                <div class="row text-start g-3">
+                    <div class="col-12">
+                        <label class="text-muted small fw-bold text-uppercase">Sitio / Address</label>
+                        <p class="mb-0 fw-medium">{{ patient.household.sitio }}</p>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted small fw-bold text-uppercase">Civil Status</label>
+                        <p class="mb-0 fw-medium">{{ patient.civil_status }}</p>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted small fw-bold text-uppercase">Contact</label>
+                        <p class="mb-0 fw-medium">{{ patient.contact or 'N/A' }}</p>
+                    </div>
+                </div>
+                
+                <hr class="my-4 opacity-50">
+                
+                {% if current_user.role != 'Viewer' %}
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('consultations.add_consultation', patient_id=patient.id) }}" class="btn btn-success btn-lg rounded-pill shadow-sm py-3">
+                        <i class="fas fa-plus-circle me-2"></i> New Consultation
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Immunization Section -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-4 d-flex justify-content-between align-items-center border-0">
+                <h5 class="fw-bold mb-0">Immunization History</h5>
+                {% if current_user.role != 'Viewer' %}
+                <button type="button" class="btn btn-light-green text-primary btn-sm rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#immModal">
+                    <i class="fas fa-syringe me-1"></i> Add Dose
+                </button>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted small">
+                            <tr>
+                                <th class="ps-4">VACCINE</th>
+                                <th>DOSE</th>
+                                <th>DATE ADMINISTERED</th>
+                                <th class="pe-4">REMARKS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for imm in patient.immunizations %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-primary">{{ imm.vaccine }}</td>
+                                <td><span class="badge bg-light text-dark fw-normal">Dose #{{ imm.dose }}</span></td>
+                                <td>{{ imm.date_administered.strftime('%b %d, %Y') }}</td>
+                                <td class="pe-4 text-muted small">{{ imm.remarks or 'No remarks' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted small">No vaccination records found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultation Section -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-4 border-0">
+                <h5 class="fw-bold mb-0">Consultation History</h5>
+            </div>
+            <div class="card-body">
+                {% for record in patient.consultations|sort(attribute='date', reverse=True) %}
+                <div class="p-4 rounded-4 bg-light mb-3 border-start border-primary border-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-primary mb-0"><i class="fas fa-calendar-day me-2"></i> {{ record.date.strftime('%B %d, %Y') }}</h6>
+                        <span class="badge bg-white text-dark shadow-sm py-2 px-3">By {{ record.created_by }}</span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small fw-bold text-uppercase d-block mb-1">Complaints</label>
+                            <p class="mb-0">{{ record.complaints }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small fw-bold text-uppercase d-block mb-1">Diagnosis</label>
+                            <p class="mb-0">{{ record.diagnosis or 'No diagnosis recorded' }}</p>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <div class="p-3 bg-white rounded-3 border">
+                                <label class="text-success small fw-bold text-uppercase d-block mb-1">Treatment / Medicine</label>
+                                <p class="mb-0 fw-medium">{{ record.treatment or 'None' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-folder-open d-block mb-2 fa-3x opacity-25"></i>
+                    No medical history found for this resident.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Immunization Modal -->
+<div class="modal fade" id="immModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="fw-bold mb-0">Add Vaccine Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('patients.add_immunization', patient_id=patient.id) }}" method="POST">
+                {{ imm_form.hidden_tag() }}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        {{ imm_form.vaccine.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                        {{ imm_form.vaccine(class="form-control bg-light border-0 py-2", placeholder="e.g. BCG, Polio, COVID-19") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            {{ imm_form.dose.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                            {{ imm_form.dose(class="form-control bg-light border-0 py-2", type="number", placeholder="1") }}
+                        </div>
+                        <div class="col-6 mb-3">
+                            {{ imm_form.date_administered.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                            {{ imm_form.date_administered(class="form-control bg-light border-0 py-2", type="date") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ imm_form.remarks.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                        {{ imm_form.remarks(class="form-control bg-light border-0 py-2") }}
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    {{ imm_form.submit(class="btn btn-primary rounded-pill px-4 shadow-sm") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

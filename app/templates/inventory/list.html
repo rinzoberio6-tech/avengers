@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
+        <h4 class="fw-bold mb-0">Medicine Inventory</h4>
+        <p class="text-muted small">Manage and monitor Barangay health supplies.</p>
+    </div>
+    <div class="col-12 col-md-6 text-md-end">
+        {% if current_user.role != 'Viewer' %}
+        <button type="button" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addMedicineModal">
+            <i class="fas fa-plus-circle me-2"></i> Add New Item
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm overflow-hidden rounded-4">
+            <div class="card-header bg-white py-4 border-0">
+                <h5 class="fw-bold mb-0">Current Stock</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted small">
+                            <tr>
+                                <th class="ps-4">MEDICINE & GENERIC NAME</th>
+                                <th>QUANTITY</th>
+                                <th>EXPIRY DATE</th>
+                                <th>STATUS</th>
+                                <th class="text-end pe-4">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for med in medicines %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-box bg-light-green text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-pills"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ med.name }}</div>
+                                            <small class="text-muted">{{ med.generic_name or '---' }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-bold {{ 'text-danger' if med.quantity <= 20 else 'text-dark' }}">
+                                        {{ med.quantity }} units
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="small">{{ med.expiry_date.strftime('%b %d, %Y') }}</span>
+                                </td>
+                                <td>
+                                    {% if med.quantity <= 20 %}
+                                        <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Low Stock</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success rounded-pill px-3">Available</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button class="btn btn-sm btn-light rounded-circle p-2 text-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        {% if current_user.role == 'Admin' %}
+                                        <a href="{{ url_for('inventory.delete_medicine', med_id=med.id) }}" class="btn btn-sm btn-light rounded-circle p-2 text-danger" onclick="return confirm('Remove this item from inventory?')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-box-open fa-3x mb-3 opacity-25"></i>
+                                        <p>No items in inventory.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Medicine Modal -->
+<div class="modal fade" id="addMedicineModal" tabindex="-1" aria-labelledby="addMedicineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold" id="addMedicineModalLabel">Add New Medicine</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label small fw-bold text-muted") }}
+                        {{ form.name(class="form-control bg-light border-0 py-2", placeholder="e.g. Biogesic") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.generic_name.label(class="form-label small fw-bold text-muted") }}
+                        {{ form.generic_name(class="form-control bg-light border-0 py-2", placeholder="e.g. Paracetamol") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            {{ form.quantity.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.quantity(class="form-control bg-light border-0 py-2", type="number", placeholder="0") }}
+                        </div>
+                        <div class="col-6 mb-3">
+                            {{ form.expiry_date.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.expiry_date(class="form-control bg-light border-0 py-2", type="date") }}
+                        </div>
+                    </div>
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg rounded-pill shadow-sm py-3 fw-bold") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if form.errors %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var myModal = new bootstrap.Modal(document.getElementById('addMedicineModal'));
+        myModal.show();
+    });
+</script>
+{% endif %}
+
+{% endblock %}

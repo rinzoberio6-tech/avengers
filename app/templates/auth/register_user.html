@@ -1,0 +1,193 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card-header bg-primary text-white p-4 text-center">
+                <i class="fas fa-user-plus fa-3x mb-3"></i>
+                <h3 class="fw-bold mb-0">{% if user %}Edit User: {{ user.username or user.bhw_code }}{% else %}Register New Personnel{% endif %}</h3>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.role.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                            {{ form.role(class="form-select bg-light border-0 py-3 rounded-4 shadow-none", id="roleSelect", onchange="toggleFields()") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.title.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                            {{ form.title(class="form-control bg-light border-0 py-3 rounded-4 shadow-none", placeholder="e.g. Barangay Captain") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.barangay_id.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                            {{ form.barangay_id(class="form-select bg-light border-0 py-3 rounded-4 shadow-none", onchange="updateAssignedSitios(this)") }}
+                        </div>
+                        <div class="col-md-6 mb-3" id="usernameGroup">
+                            {{ form.username.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                            {{ form.username(class="form-control bg-light border-0 py-3 rounded-4 shadow-none", placeholder="Username (For Login)", id="usernameInput") }}
+                        </div>
+                        <div class="col-md-6 mb-3 d-none" id="bhwCodeGroup">
+                            {{ form.bhw_code.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                            {{ form.bhw_code(class="form-control bg-light border-0 py-3 rounded-4 shadow-none", placeholder="Username (e.g. bhw_name)", id="bhwCodeInput") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.bio.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                        {{ form.bio(class="form-control bg-light border-0 py-3 rounded-4 shadow-none", placeholder="A short description about this official...") }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.contact_number.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                            {{ form.contact_number(class="form-control bg-light border-0 py-3 rounded-4 shadow-none", placeholder="09XX-XXX-XXXX") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.assigned_sitio.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                            {{ form.assigned_sitio(class="form-select bg-light border-0 py-3 rounded-4 shadow-none") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3" id="pinGroup">
+                            {{ form.pin.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                            <div class="input-group">
+                                {{ form.pin(class="form-control bg-light border-0 py-3 rounded-start-4 shadow-none", placeholder="4-Digit PIN", type="password", id="reg_pin") }}
+                                <button class="btn btn-light border-0 rounded-end-4 px-3" type="button" onclick="toggleVisibility('reg_pin', this)">
+                                    <i class="fas fa-eye text-muted"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">4 digits required for BHWs</small>
+                        </div>
+                        <div class="col-md-6 mb-3" id="passwordGroup">
+                            {{ form.password.label(class="form-label fw-bold small text-muted text-uppercase") }}
+                            <div class="input-group">
+                                {{ form.password(class="form-control bg-light border-0 py-3 rounded-start-4 shadow-none", placeholder="Admin Password", type="password", id="reg_pass") }}
+                                <button class="btn btn-light border-0 rounded-end-4 px-3" type="button" onclick="toggleVisibility('reg_pass', this)">
+                                    <i class="fas fa-eye text-muted"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg py-3 shadow-sm fw-bold rounded-4") }}
+                        <a href="{{ url_for('auth.list_users') }}" class="btn btn-outline-secondary py-3 fw-bold border-2 rounded-4">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFields() {
+    const role = document.getElementById('roleSelect').value;
+    const pinGroup = document.getElementById('pinGroup');
+    const passwordGroup = document.getElementById('passwordGroup');
+    const usernameGroup = document.getElementById('usernameGroup');
+    const bhwCodeGroup = document.getElementById('bhwCodeGroup');
+    
+    const pinInput = document.getElementById('reg_pin');
+    const passInput = document.getElementById('reg_pass');
+    const usernameInput = document.getElementById('usernameInput');
+    const bhwCodeInput = document.getElementById('bhwCodeInput');
+
+    if (role === 'BHW') {
+        // BHW Logic: Use PIN and BHW Code
+        pinGroup.classList.remove('opacity-50');
+        pinInput.disabled = false;
+        bhwCodeGroup.classList.remove('d-none');
+        bhwCodeInput.disabled = false;
+
+        // Lock Password and Username
+        passwordGroup.classList.add('opacity-50');
+        passInput.disabled = true;
+        usernameGroup.classList.add('d-none');
+        usernameInput.disabled = true;
+    } else {
+        // Others Logic: Use Password and Username
+        passwordGroup.classList.remove('opacity-50');
+        passInput.disabled = false;
+        usernameGroup.classList.remove('d-none');
+        usernameInput.disabled = false;
+
+        // Lock PIN and BHW Code
+        pinGroup.classList.add('opacity-50');
+        pinInput.disabled = true;
+        bhwCodeGroup.classList.add('d-none');
+        bhwCodeInput.disabled = true;
+    }
+}
+
+function toggleVisibility(inputId, button) {
+    const input = document.getElementById(inputId);
+    const icon = button.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+function updateAssignedSitios(barangaySelect) {
+    const barangayId = barangaySelect.value;
+    const sitioSelect = document.querySelector('select[name="assigned_sitio"]');
+    
+    if (!barangayId || barangayId == "0") {
+        sitioSelect.innerHTML = '<option value="">Select Barangay first</option>';
+        return;
+    }
+
+    fetch(`/api/barangay/${barangayId}/sitios`)
+        .then(response => response.json())
+        .then(data => {
+            sitioSelect.innerHTML = '';
+            
+            const capOption = document.createElement('option');
+            capOption.value = 'Captain';
+            capOption.text = 'Captain (Barangay Hall)';
+            sitioSelect.add(capOption);
+
+            const viewOption = document.createElement('option');
+            viewOption.value = 'Viewer';
+            viewOption.text = 'Viewer (Guest/Audit)';
+            sitioSelect.add(viewOption);
+
+            if (data.length > 0) {
+                data.forEach(sitio => {
+                    const option = document.createElement('option');
+                    option.value = sitio.name;
+                    option.text = sitio.name;
+                    sitioSelect.add(option);
+                });
+            }
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    toggleFields(); // Run once on load
+    
+    const barangaySelect = document.querySelector('select[name="barangay_id"]');
+    if (barangaySelect && barangaySelect.value != "0") {
+        const sitioSelect = document.querySelector('select[name="assigned_sitio"]');
+        if (sitioSelect && sitioSelect.options.length <= 1) {
+            updateAssignedSitios(barangaySelect);
+        }
+    }
+});
+</script>
+
+<style>
+    .opacity-50 { opacity: 0.5; pointer-events: none; }
+</style>
+{% endblock %}

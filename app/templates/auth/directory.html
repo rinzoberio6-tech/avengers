@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h3 class="fw-800 text-dark">Health Personnel Directory</h3>
+        <p class="text-muted mb-0">Explore the public health command chain from System-wide Officials to Field Workers.</p>
+    </div>
+    <div class="col-md-6">
+        <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border">
+            <span class="input-group-text bg-white border-0 ps-4">
+                <i class="fas fa-search text-primary"></i>
+            </span>
+            <input type="text" id="personnelSearch" class="form-control border-0 py-3 shadow-none" placeholder="Search by name, role, or title...">
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for p in personnel %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 card-hover overflow-hidden">
+            <div class="card-body p-0">
+                <!-- Cover Header -->
+                <div class="py-5 bg-primary bg-opacity-10 text-center">
+                    <div class="bg-white rounded-circle p-3 d-inline-block shadow-sm mb-3">
+                        <i class="fas fa-user-circle fa-4x text-primary"></i>
+                    </div>
+                </div>
+                
+                <div class="p-4 text-center">
+                    <h5 class="fw-800 mb-1">{{ p.username or p.bhw_code }}</h5>
+                    <div class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 mb-3 fw-bold">{{ p.title or p.role }}</div>
+                    
+                    <div class="bg-light p-3 rounded-4 mb-4">
+                        <div class="row g-0">
+                            <div class="col-6 border-end">
+                                <small class="text-muted d-block x-small fw-bold text-uppercase">Barangay</small>
+                                <span class="small fw-bold">{{ p.barangay.name if p.barangay else 'System-wide' }}</span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block x-small fw-bold text-uppercase">Status</small>
+                                <span class="badge rounded-pill bg-success-subtle text-success small">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{{ url_for('auth.view_profile', user_id=p.id) }}" class="btn btn-outline-primary rounded-pill py-2 fw-bold border-2">
+                            View Official Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.getElementById('personnelSearch').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const cards = document.querySelectorAll('.col-md-6.col-lg-4');
+
+        cards.forEach(card => {
+            const name = card.querySelector('h5').innerText.toLowerCase();
+            const role = card.querySelector('.badge').innerText.toLowerCase();
+            const barangay = card.querySelector('.col-6 .small').innerText.toLowerCase();
+
+            if (name.includes(searchTerm) || role.includes(searchTerm) || barangay.includes(searchTerm)) {
+                card.classList.remove('d-none');
+            } else {
+                card.classList.add('d-none');
+            }
+        });
+    });
+</script>
+
+<style>
+    .fw-800 { font-weight: 800; }
+    .x-small { font-size: 0.6rem; letter-spacing: 0.5px; }
+    .card-hover:hover { transform: translateY(-5px); transition: all 0.3s ease; }
+</style>
+{% endblock %}

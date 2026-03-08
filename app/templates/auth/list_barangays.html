@@ -1,0 +1,200 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h3 class="fw-800 text-dark">Barangay Control Center</h3>
+        <p class="text-muted">Global overview of all deployed barangay health units and field performance milestones.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Add New Barangay Card (Only for Super Admin) -->
+    {% if current_user.role == 'Super Admin' %}
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-4 px-4">
+                <h5 class="fw-800 mb-0">Deploy New Unit</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-4">
+                        <label class="form-label fw-800 small text-muted text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 1px;">Barangay Name</label>
+                        {{ form.name(class="form-control rounded-4 p-3 bg-light border-0 shadow-none", placeholder="e.g. Barangay San Jose") }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 p-3 rounded-4 fw-800 shadow-sm border-0" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
+                        <i class="fas fa-plus-circle me-2"></i> Deploy Barangay
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- List of Barangays -->
+    <div class="{{ 'col-md-8' if current_user.role == 'Super Admin' else 'col-md-12' }} mb-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+            <div class="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-800 mb-0">Active Health Units</h5>
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-4 py-2 fw-800 border-0">{{ barangays|length }} TOTAL</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr class="small text-muted text-uppercase fw-800">
+                                <th class="ps-4 border-0" style="font-size: 0.65rem; letter-spacing: 1px;">Barangay & Admin</th>
+                                <th class="border-0" style="font-size: 0.65rem; letter-spacing: 1px;">Population Stats</th>
+                                <th class="border-0" style="font-size: 0.65rem; letter-spacing: 1px;">Visit Milestone</th>
+                                <th class="text-end pe-4 border-0"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in barangays %}
+                            <tr>
+                                <td class="ps-4 py-4">
+                                    <div class="fw-800 text-dark fs-5">{{ b.obj.name }}</div>
+                                    <div class="d-flex align-items-center mt-1">
+                                        <div class="bg-dark text-white rounded-pill px-2 py-0 x-small fw-bold me-2">ADMIN</div>
+                                        <small class="text-muted fw-bold">{{ b.admin }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-3">
+                                        <div>
+                                            <small class="text-muted d-block fw-bold x-small text-uppercase mb-1">Residents</small>
+                                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ b.residents }}</span>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block fw-bold x-small text-uppercase mb-1">Monthly Visits</small>
+                                            <span class="badge bg-success-subtle text-success rounded-pill px-3">{{ b.visits }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="pe-4" style="min-width: 150px;">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <small class="fw-bold text-muted x-small text-uppercase">Monthly Progress</small>
+                                            <small class="fw-800 text-primary">{{ b.milestone }}%</small>
+                                        </div>
+                                        <div class="progress rounded-pill shadow-none" style="height: 8px; background: #eee;">
+                                            <div class="progress-bar rounded-pill" role="progressbar" style="width: {{ b.milestone }}%; background: linear-gradient(45deg, #11998e, #38ef7d);" aria-valuenow="{{ b.milestone }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Sitio Management Trigger -->
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-outline-secondary rounded-pill x-small fw-bold px-3" type="button" data-bs-toggle="collapse" data-bs-target="#sitios-{{ b.obj.id }}">
+                                            <i class="fas fa-map-signs me-1"></i> Manage Sitios ({{ b.sitios|length }})
+                                        </button>
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="dropdown">
+                                        <button class="btn btn-light rounded-circle p-2 shadow-sm" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v text-muted"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-2">
+                                            {% if current_user.role == 'Super Admin' %}
+                                            <li>
+                                                <a href="{{ url_for('auth.edit_barangay', b_id=b.obj.id) }}" class="dropdown-item rounded-3 fw-bold">
+                                                    <i class="fas fa-edit me-2 text-primary"></i> Edit Barangay
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <form action="{{ url_for('auth.toggle_barangay', b_id=b.obj.id) }}" method="POST">
+                                                    <button type="submit" class="dropdown-item rounded-3 {{ 'text-danger fw-bold' if b.obj.is_active else 'text-success' }}">
+                                                        <i class="fas {{ 'fa-ban' if b.obj.is_active else 'fa-check' }} me-2"></i> {{ 'Freeze Unit' if b.obj.is_active else 'Activate Unit' }}
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li><hr class="dropdown-divider opacity-25"></li>
+                                            <li>
+                                                <form action="{{ url_for('auth.delete_barangay', b_id=b.obj.id) }}" method="POST" onsubmit="return confirm('Are you sure? This will permanently delete the barangay if it has no linked data.')">
+                                                    <button type="submit" class="dropdown-item text-danger rounded-3 fw-bold">
+                                                        <i class="fas fa-trash-alt me-2"></i> Delete Barangay
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            {% else %}
+                                            <li><a class="dropdown-item rounded-3 small text-muted disabled" href="#"><i class="fas fa-info-circle me-2"></i> Contact Super Admin for edits</a></li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="collapse" id="sitios-{{ b.obj.id }}">
+                                <td colspan="4" class="bg-light border-0 p-4">
+                                    <div class="card border-0 shadow-sm rounded-4">
+                                        <div class="card-body">
+                                            <h6 class="fw-bold mb-3">Sitios in {{ b.obj.name }}</h6>
+                                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                                {% for s in b.sitios %}
+                                                <div class="badge bg-white text-dark border p-2 px-3 rounded-pill d-flex align-items-center sitio-tag" id="sitio-display-{{ s.id }}">
+                                                    <span class="sitio-name">{{ s.name }}</span>
+                                                    <div class="ms-2 d-flex gap-1">
+                                                        <button type="button" class="btn btn-link text-primary p-0 border-0 x-small" onclick="enableSitioEdit({{ s.id }}, '{{ s.name }}')">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <form action="{{ url_for('auth.delete_sitio', s_id=s.id) }}" method="POST">
+                                                            <button type="submit" class="btn btn-link text-danger p-0 border-0 x-small" onclick="return confirm('Remove this Sitio?')">
+                                                                <i class="fas fa-times-circle"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Hidden Edit Form -->
+                                                <form action="{{ url_for('auth.edit_sitio', s_id=s.id) }}" method="POST" class="d-none" id="sitio-edit-{{ s.id }}">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" name="name" class="form-control rounded-start-pill px-3" value="{{ s.name }}" required>
+                                                        <button type="submit" class="btn btn-primary rounded-0"><i class="fas fa-check"></i></button>
+                                                        <button type="button" class="btn btn-light border rounded-end-pill" onclick="disableSitioEdit({{ s.id }})"><i class="fas fa-times"></i></button>
+                                                    </div>
+                                                </form>
+                                                {% else %}
+                                                <span class="text-muted small italic">No Sitios registered. Residents will see "N/A".</span>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <form action="{{ url_for('auth.add_sitio', b_id=b.obj.id) }}" method="POST" class="d-flex gap-2">
+                                                {{ sitio_form.hidden_tag() }}
+                                                {{ sitio_form.name(class="form-control form-control-sm rounded-pill px-3 border-0 bg-light", placeholder="Enter new Sitio name") }}
+                                                <button type="submit" class="btn btn-dark btn-sm rounded-pill px-4 fw-bold">Add</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">No barangays deployed. Start by adding one!</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function enableSitioEdit(id, name) {
+        document.getElementById('sitio-display-' + id).classList.add('d-none');
+        document.getElementById('sitio-edit-' + id).classList.remove('d-none');
+        document.getElementById('sitio-edit-' + id).classList.add('d-inline-block');
+    }
+
+    function disableSitioEdit(id) {
+        document.getElementById('sitio-display-' + id).classList.remove('d-none');
+        document.getElementById('sitio-edit-' + id).classList.add('d-none');
+        document.getElementById('sitio-edit-' + id).classList.remove('d-inline-block');
+    }
+</script>
+
+<style>
+    .fw-800 { font-weight: 800; }
+    .x-small { font-size: 0.6rem; letter-spacing: 0.5px; }
+</style>
+{% endblock %}

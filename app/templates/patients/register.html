@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('patients.list_patients') }}" class="text-decoration-none">Residents</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Registration</li>
+            </ol>
+        </nav>
+        <h4 class="fw-bold mb-0">Resident Registration</h4>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="bg-primary py-4 px-5">
+                <h5 class="text-white mb-0 fw-bold">Enrollment Form</h5>
+                <p class="text-white opacity-75 small mb-0">Please fill out the information accurately based on the DOH Target Client List.</p>
+            </div>
+            <div class="card-body p-5">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                            {{ form.full_name.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                            {{ form.full_name(class="form-control bg-light border-0 py-2" + (" is-invalid" if form.full_name.errors else ""), placeholder="Last Name, First Name Middle Name") }}
+                            {% for error in form.full_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ form.sex.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                            {{ form.sex(class="form-select bg-light border-0 py-2" + (" is-invalid" if form.sex.errors else "")) }}
+                            {% for error in form.sex.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ form.birthdate.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                            {{ form.birthdate(class="form-control bg-light border-0 py-2" + (" is-invalid" if form.birthdate.errors else ""), type="date") }}
+                            {% for error in form.birthdate.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ form.sitio.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                            {{ form.sitio(class="form-control bg-light border-0 py-2" + (" is-invalid" if form.sitio.errors else ""), placeholder="e.g. Sitio 1, Sitio Green") }}
+                            {% for error in form.sitio.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ form.civil_status.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                            {{ form.civil_status(class="form-select bg-light border-0 py-2" + (" is-invalid" if form.civil_status.errors else "")) }}
+                            {% for error in form.civil_status.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="col-md-12">
+                            {{ form.contact.label(class="form-label small fw-bold text-uppercase text-muted") }}
+                            {{ form.contact(class="form-control bg-light border-0 py-2", placeholder="09XXXXXXXXX") }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2 mt-5">
+                        <a href="{{ url_for('patients.list_patients') }}" class="btn btn-light rounded-pill px-4 py-2">Cancel</a>
+                        {{ form.submit(class="btn btn-primary rounded-pill px-5 py-2 shadow-sm fw-bold") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

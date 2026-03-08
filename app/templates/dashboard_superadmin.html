@@ -1,0 +1,218 @@
+{% extends "layout.html" %}
+{% block content %}
+<!-- Header Greeting -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h3 class="fw-800 text-dark">System Owner Command Center</h3>
+        <p class="text-muted">Global overview of all <span class="badge bg-dark text-white rounded-pill px-3">Active Barangays</span> and system-wide health data.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Super Admin Stat Cards with Gradients -->
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden position-relative" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase opacity-75 small fw-bold mb-2">Total Barangays</h6>
+                        <h2 class="fw-800 mb-0">{{ total_barangays }}</h2>
+                    </div>
+                    <div class="bg-white bg-opacity-25 p-3 rounded-4">
+                        <i class="fas fa-city fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small opacity-75">
+                    <i class="fas fa-check-circle me-1"></i> {{ active_barangays }} Active
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #243b55 0%, #141e30 100%); color: white;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase opacity-75 small fw-bold mb-2">Total Users</h6>
+                        <h2 class="fw-800 mb-0">{{ total_users }}</h2>
+                    </div>
+                    <div class="bg-white bg-opacity-25 p-3 rounded-4">
+                        <i class="fas fa-user-shield fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small opacity-75">
+                    <i class="fas fa-users-cog me-1"></i> Admins & BHWs
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: white;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase opacity-75 small fw-bold mb-2">Total Residents</h6>
+                        <h2 class="fw-800 mb-0">{{ total_patients }}</h2>
+                    </div>
+                    <div class="bg-white bg-opacity-25 p-3 rounded-4">
+                        <i class="fas fa-id-card-alt fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small opacity-75">
+                    <i class="fas fa-database me-1"></i> Global count
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase opacity-75 small fw-bold mb-2">System Health</h6>
+                        <h2 class="fw-800 mb-0">100%</h2>
+                    </div>
+                    <div class="bg-white bg-opacity-25 p-3 rounded-4">
+                        <i class="fas fa-server fa-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small opacity-75 text-truncate">
+                    Database Online
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-800 mb-0">System Analytics</h5>
+                <button class="btn btn-sm btn-light rounded-pill px-3" onclick="loadAnalytics()"><i class="fas fa-sync-alt me-1"></i> Refresh</button>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-4">
+                            <h6 class="fw-bold mb-3 text-center">Monthly Consultations (Global)</h6>
+                            <canvas id="lineChart" style="max-height: 250px;"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-4">
+                            <h6 class="fw-bold mb-3 text-center">Residents per Barangay</h6>
+                            <canvas id="barChart" style="max-height: 250px;"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4 offset-md-4">
+                        <div class="p-3 bg-light rounded-4">
+                            <h6 class="fw-bold mb-3 text-center">User Role Distribution</h6>
+                            <canvas id="pieChart" style="max-height: 250px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 py-4 px-4">
+                <h5 class="fw-800 mb-0">System Quick Controls</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="{{ url_for('auth.list_barangays') }}" class="btn btn-light border p-3 rounded-4 w-100 text-start d-flex align-items-center transition-all hover-shadow">
+                            <div class="bg-primary text-white rounded-3 p-2 me-3">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">Add Barangay</h6>
+                                <small class="text-muted">Deploy to new location</small>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto text-muted small"></i>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ url_for('auth.register_user') }}" class="btn btn-light border p-3 rounded-4 w-100 text-start d-flex align-items-center transition-all hover-shadow">
+                            <div class="bg-dark text-white rounded-3 p-2 me-3">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">Create Admin</h6>
+                                <small class="text-muted">Appoint Barangay Head</small>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto text-muted small"></i>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ url_for('auth.list_users') }}" class="btn btn-light border p-3 rounded-4 w-100 text-start d-flex align-items-center transition-all hover-shadow">
+                            <div class="bg-info text-white rounded-3 p-2 me-3">
+                                <i class="fas fa-users-cog"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">User Audit</h6>
+                                <small class="text-muted">Monitor all accounts</small>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto text-muted small"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fw-800 { font-weight: 800; }
+    .transition-all { transition: all 0.2s ease; }
+    .hover-shadow:hover { 
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        background-color: white;
+    }
+</style>
+
+<script>
+    let lineChart, barChart, pieChart;
+
+    function loadAnalytics() {
+        fetch('/api/analytics')
+            .then(response => response.json())
+            .then(data => {
+                if (lineChart) lineChart.destroy();
+                if (barChart) barChart.destroy();
+                if (pieChart) pieChart.destroy();
+
+                const ctxLine = document.getElementById('lineChart').getContext('2d');
+                lineChart = new Chart(ctxLine, {
+                    type: 'line',
+                    data: data.line_graph,
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                const ctxBar = document.getElementById('barChart').getContext('2d');
+                barChart = new Chart(ctxBar, {
+                    type: 'bar',
+                    data: data.bar_graph,
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                const ctxPie = document.getElementById('pieChart').getContext('2d');
+                pieChart = new Chart(ctxPie, {
+                    type: 'pie',
+                    data: data.pie_graph,
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAnalytics);
+    // Realtime update every 5 minutes
+    setInterval(loadAnalytics, 300000);
+</script>
+{% endblock %}

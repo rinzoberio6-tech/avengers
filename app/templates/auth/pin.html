@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="text-center mb-4">
+            <div class="icon-box bg-success mx-auto mb-3 d-flex align-items-center justify-content-center shadow" style="width: 80px; height: 80px; border-radius: 25px;">
+                <i class="fas fa-check-circle text-white fa-2x"></i>
+            </div>
+            <h2 class="fw-bold" style="color: #2c3e50;">Welcome Back</h2>
+            <p class="text-muted">BHW Identified: <strong>{{ user.bhw_code }}</strong></p>
+            <p class="text-muted">Please enter your 4-digit PIN to login.</p>
+        </div>
+        
+        <div class="card border-0 shadow-lg rounded-4">
+            <div class="card-body p-5">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-key text-muted"></i></span>
+                            {{ form.pin(class="form-control bg-light border-0 text-center fs-2 fw-bold", placeholder="XXXX", type="password", inputmode="numeric", pattern="[0-9]*", maxlength="4", autofocus=True, id="qr_pin") }}
+                            <button class="btn btn-light border-0" type="button" onclick="toggleVisibility('qr_pin', this)">
+                                <i class="fas fa-eye text-muted"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-success btn-lg py-3 shadow-sm fw-bold") }}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg py-3 fw-bold border-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Numeric Keypad (For convenience on mobile) -->
+        <div class="mt-4 row g-2">
+            {% for i in range(1, 10) %}
+            <div class="col-4">
+                <button type="button" class="btn btn-light w-100 py-3 fw-bold rounded-3 shadow-sm" onclick="appendPin('{{ i }}')">{{ i }}</button>
+            </div>
+            {% endfor %}
+            <div class="col-4">
+                <button type="button" class="btn btn-light w-100 py-3 fw-bold rounded-3 shadow-sm" onclick="clearPin()">C</button>
+            </div>
+            <div class="col-4">
+                <button type="button" class="btn btn-light w-100 py-3 fw-bold rounded-3 shadow-sm" onclick="appendPin('0')">0</button>
+            </div>
+            <div class="col-4">
+                <button type="button" class="btn btn-light w-100 py-3 fw-bold rounded-3 shadow-sm" onclick="backspacePin()"><i class="fas fa-backspace"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const pinInput = document.getElementById('pin');
+    function appendPin(num) {
+        if (pinInput.value.length < 4) {
+            pinInput.value += num;
+        }
+    }
+    function clearPin() {
+        pinInput.value = '';
+    }
+    function backspacePin() {
+        pinInput.value = pinInput.value.slice(0, -1);
+    }
+
+    function toggleVisibility(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock %}

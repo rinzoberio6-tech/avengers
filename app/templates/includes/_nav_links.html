@@ -1,0 +1,66 @@
+<div class="nav flex-column mb-auto">
+    <a class="nav-link-custom {{ 'active' if title == 'Dashboard' or title == 'System Owner Dashboard' or title == 'BHW Dashboard' }}" href="{{ url_for('main.dashboard') }}">
+        <i class="fas fa-th-large"></i> <span>Dashboard</span>
+    </a>
+
+    <a class="nav-link-custom {{ 'active' if title == 'Health Personnel Directory' }}" href="{{ url_for('auth.directory') }}">
+        <i class="fas fa-id-card-alt"></i> <span>Staff Directory</span>
+    </a>
+
+    {% if current_user.role in ['Admin', 'Super Admin'] %}
+    <a class="nav-link-custom {{ 'active' if title == 'Manage Barangays' or title == 'Edit Barangay' }}" href="{{ url_for('auth.list_barangays') }}">
+        <i class="fas fa-city"></i> <span>Manage Barangay</span>
+    </a>
+    <a class="nav-link-custom {{ 'active' if title == 'User Management' }}" href="{{ url_for('auth.list_users') }}">
+        <i class="fas fa-user-shield"></i> <span>Manage Users</span>
+    </a>
+    {% endif %}
+
+    {% if current_user.role in ['Admin', 'Super Admin', 'Viewer'] %}
+    <a class="nav-link-custom {{ 'active' if title == 'Patients' }}" href="{{ url_for('patients.list_patients') }}">
+        <i class="fas fa-users"></i> <span>Residents</span>
+    </a>
+    <a class="nav-link-custom {{ 'active' if title == 'Households' }}" href="{{ url_for('patients.list_households') }}">
+        <i class="fas fa-house-user"></i> <span>Households</span>
+    </a>
+    <a class="nav-link-custom {{ 'active' if title == 'Consultations' }}" href="{{ url_for('consultations.list_consultations') }}">
+        <i class="fas fa-notes-medical"></i> <span>Consultations</span>
+    </a>
+    <a class="nav-link-custom {{ 'active' if title == 'Inventory' }}" href="{{ url_for('inventory.list_inventory') }}">
+        <i class="fas fa-box-open"></i> <span>Inventory</span>
+    </a>
+    {% endif %}
+
+    {% if current_user.role == 'BHW' %}
+    <a class="nav-link-custom {{ 'active' if title == 'Households' }}" href="{{ url_for('patients.list_households') }}">
+        <i class="fas fa-house-user"></i> <span>Households</span>
+    </a>
+    <a class="nav-link-custom {{ 'active' if title == 'My Profile' }}" href="{{ url_for('auth.profile') }}">
+        <i class="fas fa-user-circle"></i> <span>My Profile</span>
+    </a>
+    {% endif %}
+
+    <a class="nav-link-custom {{ 'active' if title == 'Help & Support' }}" href="{{ url_for('main.help') }}">
+        <i class="fas fa-question-circle"></i> <span>Help & Support</span>
+    </a>
+
+    <div class="mt-4 px-4 py-3 d-none d-md-block">
+        <hr class="border-secondary opacity-25">
+    </div>
+
+    <a class="nav-link-custom text-danger mt-md-5" href="{{ url_for('auth.logout') }}">
+        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+    </a>
+</div>
+
+<div class="mt-auto p-4 d-none d-md-block">
+    <div class="bg-dark p-3 rounded-4 border border-secondary border-opacity-25">
+        <small class="text-white-50 d-block mb-1">Signed in as:</small>
+        <span class="text-white small fw-bold">{{ current_user.username or current_user.bhw_code }}</span>
+        <br>
+        <span class="badge bg-success-subtle text-success ms-1" style="font-size: 0.65rem;">{{ current_user.role }}</span>
+        {% if current_user.barangay %}
+        <span class="badge bg-info-subtle text-info ms-1" style="font-size: 0.65rem;">{{ current_user.barangay.name }}</span>
+        {% endif %}
+    </div>
+</div>

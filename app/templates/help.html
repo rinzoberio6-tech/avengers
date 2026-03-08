@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <!-- Help Header Card -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 bg-primary text-white overflow-hidden">
+            <div class="card-body p-5 position-relative">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="fw-bold mb-3">How can we help you?</h2>
+                        <p class="lead mb-0 opacity-75">Welcome to the E-Kalusugan Help & Support center. Find answers to common questions or contact the system administrator for technical issues.</p>
+                    </div>
+                    <div class="col-md-4 text-center d-none d-md-block">
+                        <i class="fas fa-headset fa-8x opacity-25"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="col-12 col-lg-8">
+        <h5 class="fw-bold mb-3"><i class="fas fa-question-circle text-primary me-2"></i> Frequently Asked Questions</h5>
+        <div class="accordion border-0" id="helpAccordion">
+            <!-- FAQ 1: Roles -->
+            <div class="accordion-item border-0 mb-3 shadow-sm rounded-4 overflow-hidden">
+                <h2 class="accordion-header">
+                    <button class="accordion-button fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                        <i class="fas fa-user-shield me-2 text-muted"></i> What are the different user roles?
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#helpAccordion">
+                    <div class="accordion-body text-muted">
+                        <p>The system has three primary roles:</p>
+                        <ul>
+                            <li><strong>Admin:</strong> Has full access to the system, including user management, deleting records, and editing settings.</li>
+                            <li><strong>BHW (Barangay Health Worker):</strong> Can register residents, add consultations, and manage inventory.</li>
+                            <li><strong>Viewer (LGU Oversight):</strong> Can monitor all records and dashboard stats but cannot add, edit, or delete any data.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 2: QR Login -->
+            <div class="accordion-item border-0 mb-3 shadow-sm rounded-4 overflow-hidden">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                        <i class="fas fa-qrcode me-2 text-muted"></i> My QR Code is not scanning, what should I do?
+                    </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                    <div class="accordion-body text-muted">
+                        <p>If your QR ID card isn't scanning, try the following:</p>
+                        <ol>
+                            <li>Ensure there is enough light in the room.</li>
+                            <li>Keep the ID card still for a few seconds.</li>
+                            <li>Clean your phone or computer's camera lens.</li>
+                        </ol>
+                        <p><strong>Backup Method:</strong> If the QR code still fails, click the "BHW Access" tab on the login page and enter your <strong>BHW Code</strong> and <strong>PIN</strong> manually.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 3: Deletions -->
+            <div class="accordion-item border-0 mb-3 shadow-sm rounded-4 overflow-hidden">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                        <i class="fas fa-trash-alt me-2 text-muted"></i> Why can't I delete a record?
+                    </button>
+                </h2>
+                <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                    <div class="accordion-body text-muted">
+                        <p>To prevent accidental loss of important health data, only users with the <strong>Admin</strong> role are permitted to delete resident profiles or inventory items. If a mistake was made, please contact your supervisor or an Admin to correct it.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Support Card -->
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4 text-center">
+                <div class="bg-primary-subtle rounded-circle p-3 d-inline-block mb-3">
+                    <i class="fas fa-envelope-open-text text-primary fa-2x"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Technical Support</h5>
+                <p class="text-muted small mb-4">Having a technical problem or a system bug? Send a message to the IT team.</p>
+                <a href="mailto:support@ekalusugan.gov.ph" class="btn btn-primary w-100 rounded-pill py-2 fw-bold mb-2">Email Support</a>
+                <p class="text-muted x-small mb-0"><i class="fas fa-clock me-1"></i> Response within 24 hours</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 bg-light">
+            <div class="card-body p-4 text-center">
+                <h6 class="fw-bold mb-2">Emergency?</h6>
+                <p class="text-muted small mb-0">For immediate assistance, please call the main Health Office IT Desk at <strong>(555) 123-4567</strong>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

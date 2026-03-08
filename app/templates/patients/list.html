@@ -1,0 +1,288 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-4">
+        <h4 class="fw-bold mb-0">Resident Management</h4>
+        <p class="text-muted small mb-0">Total of {{ patients|length }} residents registered.</p>
+    </div>
+    <div class="col-md-5">
+        <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border">
+            <span class="input-group-text bg-white border-0 ps-4">
+                <i class="fas fa-search text-primary"></i>
+            </span>
+            <input type="text" id="residentSearch" class="form-control border-0 py-3 shadow-none" placeholder="Search by name, sitio, or contact...">
+        </div>
+    </div>
+    <div class="col-md-3 text-end">
+        {% if current_user.role != 'Viewer' %}
+        <button type="button" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#registerPatientModal">
+            <i class="fas fa-plus-circle me-2"></i> Register New
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small">
+                    <tr>
+                        <th class="ps-4">FULL NAME</th>
+                        <th>SEX</th>
+                        <th>BIRTHDATE</th>
+                        <th>SITIO</th>
+                        <th>CONTACT</th>
+                        <th class="text-end pe-4">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-primary text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 0.9rem;">
+                                    {{ patient.full_name[0]|upper }}
+                                </div>
+                                <span class="fw-bold">{{ patient.full_name }}</span>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark fw-bold rounded-pill px-3">{{ patient.sex }}</span></td>
+                        <td><small>{{ patient.birthdate.strftime('%b %d, %Y') }}</small></td>
+                        <td>{{ patient.household.sitio }}</td>
+                        <td>{{ patient.contact or '<span class="text-muted small">N/A</span>'|safe }}</td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ url_for('patients.view_patient', patient_id=patient.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="fas fa-eye me-1"></i> View
+                                </a>
+                                {% if current_user.role != 'Viewer' %}
+                                <a href="{{ url_for('consultations.add_consultation', patient_id=patient.id) }}" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm">
+                                    <i class="fas fa-notes-medical me-1"></i> Consult
+                                </a>
+                                {% endif %}
+                                
+                                {% if current_user.role in ['Admin', 'Super Admin'] %}
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-2">
+                                        <li>
+                                            <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}" class="dropdown-item rounded-3 fw-bold">
+                                                <i class="fas fa-edit me-2 text-primary"></i> Edit Resident
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{{ url_for('patients.delete_patient', patient_id=patient.id) }}" method="POST" onsubmit="return confirm('Are you absolutely sure? This will permanently delete the resident and all their medical history.')">
+                                                <button type="submit" class="dropdown-item text-danger rounded-3 fw-bold">
+                                                    <i class="fas fa-trash-alt me-2"></i> Delete Resident
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-users fa-3x mb-3 opacity-25"></i>
+                                <p>No residents found in the database.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Register Patient Modal -->
+<div class="modal fade" id="registerPatientModal" tabindex="-1" aria-labelledby="registerPatientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold" id="registerPatientModalLabel"><i class="fas fa-user-plus text-primary me-2"></i> Register New Resident</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            {{ form.full_name.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.full_name(class="form-control bg-light border-0 py-2", placeholder="Full Name") }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.sex.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.sex(class="form-select bg-light border-0 py-2") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.birthdate.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.birthdate(class="form-control bg-light border-0 py-2", type="date") }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.barangay_id.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.barangay_id(class="form-select bg-light border-0 py-2", onchange="updateSitios(this)") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.sitio.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.sitio(class="form-select bg-light border-0 py-2") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.household_name.label(class="form-label small fw-bold text-muted") }}
+                        {{ form.household_name(class="form-control bg-light border-0 py-2", placeholder="e.g. Dela Cruz Family") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.civil_status.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.civil_status(class="form-select bg-light border-0 py-2") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.contact.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.contact(class="form-control bg-light border-0 py-2", placeholder="09XXXXXXXXX") }}
+                        </div>
+                    </div>
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg rounded-pill shadow-sm py-3 fw-bold") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if form.errors or edit_mode %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var modalId = "{{ 'editPatientModal' if edit_mode else 'registerPatientModal' }}";
+        var myModal = new bootstrap.Modal(document.getElementById(modalId));
+        myModal.show();
+    });
+</script>
+{% endif %}
+
+{% if edit_mode %}
+<!-- Edit Patient Modal -->
+<div class="modal fade" id="editPatientModal" tabindex="-1" aria-labelledby="editPatientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold" id="editPatientModalLabel"><i class="fas fa-edit text-primary me-2"></i> Edit Resident: {{ patient_to_edit.full_name }}</h5>
+                <a href="{{ url_for('patients.list_patients') }}" class="btn-close"></a>
+            </div>
+            <div class="modal-body p-4">
+                <form method="POST" action="{{ url_for('patients.edit_patient', patient_id=patient_to_edit.id) }}">
+                    {{ form.hidden_tag() }}
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            {{ form.full_name.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.full_name(class="form-control bg-light border-0 py-2", placeholder="Full Name") }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.sex.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.sex(class="form-select bg-light border-0 py-2") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.birthdate.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.birthdate(class="form-control bg-light border-0 py-2", type="date") }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.barangay_id.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.barangay_id(class="form-select bg-light border-0 py-2", onchange="updateSitios(this)") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.sitio.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.sitio(class="form-select bg-light border-0 py-2") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.household_name.label(class="form-label small fw-bold text-muted") }}
+                        {{ form.household_name(class="form-control bg-light border-0 py-2", placeholder="e.g. Dela Cruz Family") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.civil_status.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.civil_status(class="form-select bg-light border-0 py-2") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.contact.label(class="form-label small fw-bold text-muted") }}
+                            {{ form.contact(class="form-control bg-light border-0 py-2", placeholder="09XXXXXXXXX") }}
+                        </div>
+                    </div>
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="btn btn-success btn-lg rounded-pill shadow-sm py-3 fw-bold", value="Update Profile") }}
+                        <a href="{{ url_for('patients.list_patients') }}" class="btn btn-light rounded-pill mt-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    document.getElementById('residentSearch').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const name = row.querySelector('.fw-bold').innerText.toLowerCase();
+            const sitio = row.querySelectorAll('td')[3].innerText.toLowerCase();
+            const contact = row.querySelectorAll('td')[4].innerText.toLowerCase();
+
+            if (name.includes(searchTerm) || sitio.includes(searchTerm) || contact.includes(searchTerm)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+
+function updateSitios(barangaySelect) {
+    const barangayId = barangaySelect.value;
+    const modal = barangaySelect.closest('.modal');
+    const sitioSelect = modal.querySelector('select[name="sitio"]');
+    
+    if (!barangayId || barangayId == "0") {
+        sitioSelect.innerHTML = '<option value="">Select Barangay first</option>';
+        return;
+    }
+
+    fetch(`/api/barangay/${barangayId}/sitios`)
+        .then(response => response.json())
+        .then(data => {
+            sitioSelect.innerHTML = '';
+            if (data.length === 0) {
+                const option = document.createElement('option');
+                option.value = 'N/A';
+                option.text = 'No Sitios Registered';
+                sitioSelect.add(option);
+            } else {
+                data.forEach(sitio => {
+                    const option = document.createElement('option');
+                    option.value = sitio.name;
+                    option.text = sitio.name;
+                    sitioSelect.add(option);
+                });
+            }
+        });
+}
+</script>
+
+{% endblock %}

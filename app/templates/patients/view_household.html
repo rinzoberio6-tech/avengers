@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-5 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+            <div class="card-header bg-primary text-white p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-white bg-opacity-25 p-3 rounded-4">
+                        <i class="fas fa-house-user fa-2x"></i>
+                    </div>
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold">Household ID: #{{ household.id }}</span>
+                </div>
+                <h4 class="fw-bold mb-1">{{ household.sitio }}</h4>
+                <p class="mb-0 opacity-75 small">{{ household.address }}</p>
+            </div>
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3 text-uppercase small text-muted">Residents ({{ household.patients|length }})</h6>
+                <div class="list-group list-group-flush border-top">
+                    {% for p in household.patients %}
+                    <a href="{{ url_for('patients.view_patient', patient_id=p.id) }}" class="list-group-item list-group-item-action border-0 px-0 py-3 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light p-2 rounded-circle me-3">
+                                <i class="fas fa-user text-muted"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">{{ p.full_name }}</div>
+                                <small class="text-muted">{{ p.sex }} | {{ p.birthdate.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted small"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-bold">Household QR Code</h5>
+            </div>
+            <div class="card-body text-center p-4">
+                <!-- Placeholder for QR Code generator (can use a library or just an image) -->
+                <div class="bg-light p-5 rounded-4 mb-3 d-inline-block border">
+                    <i class="fas fa-qrcode fa-5x text-muted opacity-25"></i>
+                </div>
+                <p class="text-muted small">Stick this QR code on the household's door for easier scanning by BHWs.</p>
+                <button class="btn btn-outline-primary rounded-pill px-4 btn-sm fw-bold">
+                    <i class="fas fa-print me-2"></i> Print Label
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-7 mb-4">
+        {% if current_user.role == 'BHW' %}
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-edit text-success me-2"></i> Record New Visit</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('patients.record_visit', h_id=household.id) }}" method="POST">
+                    {{ visit_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ visit_form.health_remarks.label(class="form-label small fw-bold text-muted") }}
+                        {{ visit_form.health_remarks(class="form-control rounded-4 p-3 bg-light border-0", placeholder="BP: 120/80, No symptoms, Fully vaccinated") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ visit_form.notes.label(class="form-label small fw-bold text-muted") }}
+                        {{ visit_form.notes(class="form-control rounded-4 p-3 bg-light border-0", placeholder="Additional observations...") }}
+                    </div>
+                    <div class="mb-4">
+                        {{ visit_form.follow_up_needed.label(class="form-label small fw-bold text-muted") }}
+                        {{ visit_form.follow_up_needed(class="form-select rounded-4 p-3 bg-light border-0") }}
+                    </div>
+                    {{ visit_form.submit(class="btn btn-success w-100 p-3 rounded-4 fw-bold shadow-sm") }}
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-bold">Visit History</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4 border-0">Date & BHW</th>
+                                <th class="border-0">Remarks</th>
+                                <th class="border-0">Follow-up</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visit in household.visits|sort(attribute='date_visited', reverse=True) %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold">{{ visit.date_visited.strftime('%b %d, %Y %I:%M %p') }}</div>
+                                    <small class="text-muted">By: {{ visit.bhw.bhw_code }}</small>
+                                </td>
+                                <td>
+                                    <small class="d-block x-small fw-bold text-success text-uppercase">Health Remarks:</small>
+                                    <div class="small">{{ visit.health_remarks }}</div>
+                                    {% if visit.notes %}
+                                    <small class="d-block x-small fw-bold text-primary text-uppercase mt-2">Notes:</small>
+                                    <div class="small">{{ visit.notes }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if visit.follow_up_needed %}
+                                    <span class="badge bg-warning-subtle text-warning rounded-pill">Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-success-subtle text-success rounded-pill">No</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted small">No visit records yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

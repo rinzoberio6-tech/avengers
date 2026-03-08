@@ -1,0 +1,115 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center no-print mb-4">
+        <h2 class="fw-bold">ID Card Generator</h2>
+        <p class="text-muted">Generate and print the official BHW Identification Card with QR Login capability.</p>
+        <button onclick="window.print()" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm fw-bold">
+            <i class="fas fa-print me-2"></i> Print ID Card
+        </button>
+        <a href="{{ url_for('auth.list_users') }}" class="btn btn-outline-secondary btn-lg rounded-pill px-4 fw-bold ms-2">
+            Back to List
+        </a>
+    </div>
+
+    <!-- ID Card Design -->
+    <div id="id-card-print" class="id-card-wrapper d-flex justify-content-center">
+        <div class="id-card shadow-lg border rounded-0 overflow-hidden position-relative" style="width: 320px; height: 560px; font-family: 'Inter', sans-serif; background: linear-gradient(180deg, #ffffff 0%, #e8f8f5 100%); border: 3px solid #2ecc71 !important;">
+            
+            <!-- Right Vertical Bar (Blue) -->
+            <div class="position-absolute end-0 top-0 h-100 bg-primary d-flex align-items-center justify-content-center" style="width: 60px; z-index: 10;">
+                <h5 class="text-white text-uppercase fw-bold m-0" style="transform: rotate(270deg); white-space: nowrap; font-size: 1.1rem; letter-spacing: 2px;">
+                    Barangay Health Worker
+                </h5>
+            </div>
+
+            <!-- Top Header Section (White) -->
+            <div class="p-4 pe-5">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-primary p-2 rounded-2 me-2">
+                        <i class="fas fa-hand-holding-medical text-white fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.9rem; letter-spacing: 1px;">E-KALUSUGAN</h6>
+                        <small class="text-muted fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">HEALTH SYSTEM</small>
+                    </div>
+                </div>
+
+                <!-- Profile Image Section -->
+                <div class="text-center my-4">
+                    <div class="rounded-circle border border-5 border-light shadow-sm mx-auto overflow-hidden bg-light d-flex align-items-center justify-content-center" style="width: 160px; height: 160px;">
+                        <!-- Placeholder Icon instead of actual image if not available -->
+                        <i class="fas fa-user text-muted opacity-25" style="font-size: 5rem;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dark Blue Info Section -->
+            <div class="bg-dark text-white p-4 pe-5" style="margin-right: 60px;">
+                <h4 class="fw-bold mb-3 text-uppercase" style="font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">{{ user.username or user.bhw_code }}</h4>
+                <div class="mt-3">
+                    <div class="row align-items-center g-0">
+                        <div class="col-4">
+                            <!-- QR Code Container -->
+                            <div id="qrcode" class="bg-white p-1 rounded-1 shadow-sm" style="width: 72px; height: 72px;"></div>
+                        </div>
+                        <div class="col-8 ps-3">
+                            <div class="mb-2">
+                                <small class="d-block opacity-75 fw-bold text-uppercase" style="font-size: 0.55rem; letter-spacing: 1px;">Barangay</small>
+                                <h6 class="fw-800 mb-0" style="font-size: 0.85rem;">{{ user.barangay.name if user.barangay else 'SYSTEM' }}</h6>
+                            </div>
+                            <div>
+                                <small class="d-block opacity-75 fw-bold text-uppercase" style="font-size: 0.55rem; letter-spacing: 1px;">Personnel Code</small>
+                                <h6 class="fw-800 mb-0" style="font-size: 0.85rem;">{{ user.bhw_code or '---' }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Section -->
+            <div class="p-4 pe-5 text-center mt-auto">
+                <small class="text-muted fw-bold" style="font-size: 0.7rem;">www.e-kalusugan.gov.ph</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .x-small { font-size: 0.55rem; }
+    .bg-primary { background-color: #0d6efd !important; } /* Standard Bootstrap Primary Blue */
+    .bg-dark { background-color: #1a252f !important; } /* Deeper Blue-Black */
+    
+    @media print {
+        .no-print, .sidebar, .navbar, .alert { display: none !important; }
+        body { background: white !important; margin: 0; padding: 0; }
+        .main-content { padding: 0 !important; margin: 0 !important; width: 100% !important; }
+        .container-fluid { padding: 0 !important; }
+        .id-card-wrapper { display: block !important; margin: 0 auto !important; padding-top: 50px; }
+        .id-card { 
+            box-shadow: none !important; 
+            border: 3px solid #2ecc71 !important; 
+            background: linear-gradient(180deg, #ffffff 0%, #e8f8f5 100%) !important;
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+        }
+        .bg-primary { background-color: #0d6efd !important; -webkit-print-color-adjust: exact; }
+        .bg-dark { background-color: #1a252f !important; -webkit-print-color-adjust: exact; }
+    }
+</style>
+
+<!-- QR Code Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    window.onload = function() {
+        var qrcode = new QRCode(document.getElementById("qrcode"), {
+            text: "{{ qr_url }}",
+            width: 62, // Smaller for the layout
+            height: 62,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    }
+</script>
+{% endblock %}
