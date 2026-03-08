@@ -39,17 +39,37 @@
                 <h5 class="mb-0 fw-bold">Household QR Code</h5>
             </div>
             <div class="card-body text-center p-4">
-                <!-- Placeholder for QR Code generator (can use a library or just an image) -->
-                <div class="bg-light p-5 rounded-4 mb-3 d-inline-block border">
-                    <i class="fas fa-qrcode fa-5x text-muted opacity-25"></i>
+                <!-- QR Code Container -->
+                <div class="bg-white p-3 rounded-4 mb-3 d-inline-block border shadow-sm">
+                    <div id="household-qrcode"></div>
                 </div>
                 <p class="text-muted small">Stick this QR code on the household's door for easier scanning by BHWs.</p>
-                <button class="btn btn-outline-primary rounded-pill px-4 btn-sm fw-bold">
+                <button onclick="window.print()" class="btn btn-outline-primary rounded-pill px-4 btn-sm fw-bold">
                     <i class="fas fa-print me-2"></i> Print Label
                 </button>
             </div>
         </div>
     </div>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var qrText = "{{ url_for('patients.scan_household', token=household.qr_token, _external=True) if household.qr_token else '' }}";
+            if (qrText) {
+                var qrcode = new QRCode(document.getElementById("household-qrcode"), {
+                    text: qrText,
+                    width: 150,
+                    height: 150,
+                    colorDark : "#1e3c72",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            } else {
+                document.getElementById("household-qrcode").innerHTML = '<p class="text-muted small">QR token missing. Please re-save this household.</p>';
+            }
+        });
+    </script>
     
     <div class="col-md-7 mb-4">
         {% if current_user.role == 'BHW' %}

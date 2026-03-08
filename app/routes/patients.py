@@ -3,8 +3,15 @@ from flask_login import login_required, current_user
 from app import db
 from app.models import Patient, Household, Immunization, Visit, Sitio, Barangay
 from app.forms import PatientForm, ImmunizationForm, VisitForm
+import secrets
 
 patients = Blueprint('patients', __name__)
+
+@patients.route('/household/scan/<token>')
+@login_required
+def scan_household(token):
+    household = Household.query.filter_by(qr_token=token).first_or_404()
+    return redirect(url_for('patients.view_household', h_id=household.id))
 
 @patients.route('/households')
 @login_required
@@ -194,7 +201,8 @@ def list_patients():
                 sitio=selected_sitio_name, 
                 sitio_id=sitio_obj.id if sitio_obj else None,
                 address=selected_sitio_name, 
-                barangay_id=target_barangay_id
+                barangay_id=target_barangay_id,
+                qr_token=secrets.token_hex(16)
             )
             db.session.add(household)
             db.session.commit()

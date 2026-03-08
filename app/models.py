@@ -47,6 +47,7 @@ class Household(db.Model):
     sitio_id = db.Column(db.Integer, db.ForeignKey('sitio.id'), nullable=True)
     sitio = db.Column(db.String(100), nullable=False) # Keep for backward compatibility/display
     address = db.Column(db.String(200), nullable=False)
+    qr_token = db.Column(db.String(100), unique=True, nullable=True)
     barangay_id = db.Column(db.Integer, db.ForeignKey('barangay.id'), nullable=False)
     patients = db.relationship('Patient', backref='household', lazy=True)
     visits = db.relationship('Visit', backref='household', lazy=True)
