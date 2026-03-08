@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="row mb-4 align-items-center">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <h3 class="fw-800 text-dark mb-1">Household Registry</h3>
-        <p class="text-muted mb-0">Families grouped by registered Sitios within the barangay.</p>
+        <p class="text-muted mb-0">Families grouped by registered Sitios.</p>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-5">
         <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white border">
             <span class="input-group-text bg-white border-0 ps-4">
                 <i class="fas fa-search text-primary"></i>
@@ -13,7 +13,57 @@
             <input type="text" id="householdSearch" class="form-control border-0 py-3 shadow-none" placeholder="Search by family name or address...">
         </div>
     </div>
+    <div class="col-md-3 text-end">
+        <button type="button" class="btn btn-dark btn-lg rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#scanHouseholdModal">
+            <i class="fas fa-qrcode me-2"></i> Scan QR
+        </button>
+    </div>
 </div>
+
+<!-- Scan Household Modal -->
+<div class="modal fade" id="scanHouseholdModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title fw-800"><i class="fas fa-qrcode text-primary me-2"></i> Scan Household QR</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div id="reader" class="rounded-4 overflow-hidden shadow-sm mb-3"></div>
+                <p class="text-muted small">Scan the QR code posted on the household's door to quickly record a visit.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Scanner Scripts -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const modal = document.getElementById('scanHouseholdModal');
+        let html5QrCode;
+
+        modal.addEventListener('shown.bs.modal', function () {
+            html5QrCode = new Html5Qrcode("reader");
+            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                if (decodedText.includes('/household/scan/')) {
+                    window.location.href = decodedText;
+                    html5QrCode.stop();
+                } else {
+                    alert("Invalid Household QR Code");
+                }
+            };
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+        });
+
+        modal.addEventListener('hidden.bs.modal', function () {
+            if (html5QrCode) {
+                html5QrCode.stop().catch(err => console.error("Error stopping scanner", err));
+            }
+        });
+    });
+</script>
 
 {% set grouped_households = {} %}
 {% for h in households %}
