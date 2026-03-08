@@ -40,3 +40,9 @@ def create_app(config_class=Config):
             db.session.commit()
 
     return app
+
+# Create the app instance here so Gunicorn can find it via 'app:app'
+app = create_app()
+
+with app.app_context():
+    db.create_all()
