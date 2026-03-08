@@ -56,7 +56,7 @@ class PatientForm(FlaskForm):
     sex = SelectField('Sex', choices=[('Male', 'Male'), ('Female', 'Female')], validators=[DataRequired()])
     birthdate = DateField('Birthdate', validators=[DataRequired()])
     barangay_id = SelectField('Barangay', coerce=int)
-    sitio = SelectField('Sitio', validators=[DataRequired()])
+    sitio = SelectField('Sitio', validate_choice=False)
     household_name = StringField('Household/Family Name (e.g. Dela Cruz Family)', validators=[DataRequired(), Length(max=100)])
     civil_status = SelectField('Civil Status', choices=[('Single', 'Single'), ('Married', 'Married'), ('Widowed', 'Widowed'), ('Separated', 'Separated')], validators=[DataRequired()])
     contact = StringField('Contact Number')

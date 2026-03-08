@@ -161,6 +161,10 @@ def list_patients():
         form.sitio.choices = [('', 'Select Barangay first')]
 
     if form.validate_on_submit():
+        if not form.sitio.data or form.sitio.data in ['', 'N/A']:
+            flash('Please select a valid Sitio.', 'danger')
+            return redirect(url_for('patients.list_patients'))
+            
         if current_user.role == 'BHW':
             flash('BHWs cannot create new households directly.', 'danger')
             return redirect(url_for('patients.list_patients'))
