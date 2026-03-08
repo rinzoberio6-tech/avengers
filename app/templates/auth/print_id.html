@@ -51,16 +51,16 @@
                     <div class="row align-items-center g-0">
                         <div class="col-4">
                             <!-- QR Code Container -->
-                            <div id="qrcode" class="bg-white p-1 rounded-1 shadow-sm" style="width: 72px; height: 72px;"></div>
+                            <div id="qrcode" class="bg-white p-2 rounded-2 shadow-sm" style="width: 85px; height: 85px;"></div>
                         </div>
-                        <div class="col-8 ps-3">
+                        <div class="col-8 ps-2">
                             <div class="mb-2">
                                 <small class="d-block opacity-75 fw-bold text-uppercase" style="font-size: 0.55rem; letter-spacing: 1px;">Barangay</small>
-                                <h6 class="fw-800 mb-0" style="font-size: 0.85rem;">{{ user.barangay.name if user.barangay else 'SYSTEM' }}</h6>
+                                <h6 class="fw-800 mb-0" style="font-size: 0.8rem;">{{ user.barangay.name if user.barangay else 'SYSTEM' }}</h6>
                             </div>
                             <div>
                                 <small class="d-block opacity-75 fw-bold text-uppercase" style="font-size: 0.55rem; letter-spacing: 1px;">Personnel Code</small>
-                                <h6 class="fw-800 mb-0" style="font-size: 0.85rem;">{{ user.bhw_code or '---' }}</h6>
+                                <h6 class="fw-800 mb-0" style="font-size: 0.8rem;">{{ user.bhw_code or '---' }}</h6>
                             </div>
                         </div>
                     </div>
@@ -104,11 +104,11 @@
     window.onload = function() {
         var qrcode = new QRCode(document.getElementById("qrcode"), {
             text: "{{ qr_url }}",
-            width: 62, // Smaller for the layout
-            height: 62,
+            width: 70, // Increased size
+            height: 70,
             colorDark : "#000000",
             colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
+            correctLevel : QRCode.CorrectLevel.M // Changed from H to M for better scannability at small sizes
         });
     }
 </script>
