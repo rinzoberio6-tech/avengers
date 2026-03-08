@@ -1,11 +1,46 @@
-from flask import Blueprint, render_template, redirect, url_for, jsonify
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, redirect, url_for, jsonify, flash, request
+from flask_login import login_required, current_user, logout_user
 from app.models import Patient, Consultation, Medicine, Immunization, User, Barangay, Visit, Household, Sitio
 from datetime import datetime, timedelta
 from sqlalchemy import func
-from app import db
+from app import db, bcrypt
 
 main = Blueprint('main', __name__)
+
+@main.route('/system/reset', methods=['GET', 'POST'])
+def system_reset():
+    # Check if any users exist
+    user_count = User.query.count()
+    
+    # If users exist, ONLY a logged-in Super Admin can use this via POST
+    if user_count > 0:
+        if not current_user.is_authenticated or current_user.role != 'Super Admin' or request.method == 'GET':
+            # Stealth: Don't even show an error, just go to login
+            return redirect(url_for('auth.login'))
+
+    try:
+        # Drop and Recreate tables
+        db.drop_all()
+        db.create_all()
+
+        # Recreate Super Admin
+        hashed_pw = bcrypt.generate_password_hash('Super123').decode('utf-8')
+        super_admin = User(
+            username='SuperAdmin',
+            password=hashed_pw,
+            role='Super Admin'
+        )
+        db.session.add(super_admin)
+        db.session.commit()
+
+        if current_user.is_authenticated:
+            logout_user()
+            
+        flash('System Initialized! Login with SuperAdmin / Super123', 'success')
+        return redirect(url_for('auth.login'))
+    except Exception as e:
+        db.session.rollback()
+        return redirect(url_for('auth.login'))
 
 @main.route('/')
 def index():
