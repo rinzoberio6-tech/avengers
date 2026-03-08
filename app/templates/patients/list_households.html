@@ -47,14 +47,22 @@
             html5QrCode = new Html5Qrcode("reader");
             const qrCodeSuccessCallback = (decodedText, decodedResult) => {
                 if (decodedText.includes('/household/scan/')) {
-                    window.location.href = decodedText;
-                    html5QrCode.stop();
+                    // Stop the scanner first, then redirect
+                    html5QrCode.stop().then(() => {
+                        window.location.href = decodedText;
+                    }).catch(() => {
+                        window.location.href = decodedText;
+                    });
                 } else {
-                    alert("Invalid Household QR Code");
+                    alert("Invalid Household QR Code. Please scan a valid family ID.");
                 }
             };
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-            html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+            html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+                .catch(err => {
+                    console.error("Scanner start error:", err);
+                    alert("Could not access camera. Please check permissions.");
+                });
         });
 
         modal.addEventListener('hidden.bs.modal', function () {

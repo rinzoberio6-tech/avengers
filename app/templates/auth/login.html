@@ -119,21 +119,39 @@ function toggleVisibility(inputId, button) {
 <script>
     const scanBtn = document.getElementById('scanBtn');
     const readerDiv = document.getElementById('reader');
+    let html5QrCode;
 
     scanBtn.addEventListener('click', () => {
-        scanBtn.style.display = 'none';
-        const html5QrCode = new Html5Qrcode("reader");
+        scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Starting Camera...';
+        scanBtn.disabled = true;
+        
+        html5QrCode = new Html5Qrcode("reader");
         const qrCodeSuccessCallback = (decodedText, decodedResult) => {
             // Handle the scanned URL
             if (decodedText.includes('/qr-login/')) {
-                window.location.href = decodedText;
-                html5QrCode.stop();
+                // Stop the scanner first, then redirect
+                html5QrCode.stop().then(() => {
+                    window.location.href = decodedText;
+                }).catch(() => {
+                    window.location.href = decodedText;
+                });
             } else {
-                alert("Invalid QR Code for E-Kalusugan");
+                alert("Invalid QR Code for E-Kalusugan. Please scan your official ID.");
             }
         };
+        
         const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-        html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+        
+        html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+            .then(() => {
+                scanBtn.style.display = 'none';
+            })
+            .catch(err => {
+                console.error("Scanner error:", err);
+                alert("Could not access camera. Please check your permissions.");
+                scanBtn.innerHTML = '<i class="fas fa-qrcode me-2"></i> Scan ID Card';
+                scanBtn.disabled = false;
+            });
     });
 </script>
 {% endblock %}
