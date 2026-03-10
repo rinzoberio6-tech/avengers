@@ -63,9 +63,12 @@
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="d-flex justify-content-end gap-2">
-                                        <button class="btn btn-sm btn-light rounded-circle p-2 text-primary">
+                                        {% if current_user.role != 'Viewer' %}
+                                        <button class="btn btn-sm btn-light rounded-circle p-2 text-primary" data-bs-toggle="modal" data-bs-target="#editMedicineModal{{ med.id }}">
                                             <i class="fas fa-edit"></i>
                                         </button>
+                                        {% endif %}
+                                        
                                         {% if current_user.role == 'Admin' %}
                                         <a href="{{ url_for('inventory.delete_medicine', med_id=med.id) }}" class="btn btn-sm btn-light rounded-circle p-2 text-danger" onclick="return confirm('Remove this item from inventory?')">
                                             <i class="fas fa-trash-alt"></i>
@@ -73,6 +76,44 @@
                                         {% endif %}
                                     </div>
                                 </td>
+
+                                <!-- Edit Medicine Modal -->
+                                <div class="modal fade" id="editMedicineModal{{ med.id }}" tabindex="-1" aria-labelledby="editMedicineModalLabel{{ med.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg rounded-4 text-start">
+                                            <div class="modal-header border-0 pt-4 px-4">
+                                                <h5 class="modal-title fw-bold" id="editMedicineModalLabel{{ med.id }}">Edit Medicine: {{ med.name }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-4">
+                                                <form method="POST" action="{{ url_for('inventory.edit_medicine', med_id=med.id) }}">
+                                                    {{ form.hidden_tag() }}
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-bold text-muted">Medicine Name</label>
+                                                        <input type="text" name="name" class="form-control bg-light border-0 py-2" value="{{ med.name }}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-bold text-muted">Generic Name</label>
+                                                        <input type="text" name="generic_name" class="form-control bg-light border-0 py-2" value="{{ med.generic_name or '' }}">
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-6 mb-3">
+                                                            <label class="form-label small fw-bold text-muted">Quantity</label>
+                                                            <input type="number" name="quantity" class="form-control bg-light border-0 py-2" value="{{ med.quantity }}" required>
+                                                        </div>
+                                                        <div class="col-6 mb-3">
+                                                            <label class="form-label small fw-bold text-muted">Expiry Date</label>
+                                                            <input type="date" name="expiry_date" class="form-control bg-light border-0 py-2" value="{{ med.expiry_date.strftime('%Y-%m-%d') }}" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-grid mt-4">
+                                                        <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm py-3 fw-bold text-white">Save Changes</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </tr>
                             {% else %}
                             <tr>

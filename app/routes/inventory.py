@@ -25,6 +25,29 @@ def list_inventory():
     all_medicines = Medicine.query.order_by(Medicine.name).all()
     return render_template('inventory/list.html', title='Inventory', medicines=all_medicines, form=form)
 
+@inventory.route('/inventory/edit/<int:med_id>', methods=['GET', 'POST'])
+@login_required
+def edit_medicine(med_id):
+    if current_user.role == 'Viewer':
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('inventory.list_inventory'))
+        
+    med = Medicine.query.get_or_404(med_id)
+    form = MedicineForm()
+    
+    if form.validate_on_submit():
+        med.name = form.name.data
+        med.generic_name = form.generic_name.data
+        med.quantity = form.quantity.data
+        med.expiry_date = form.expiry_date.data
+        db.session.commit()
+        flash(f'Updated {med.name} successfully!', 'success')
+        return redirect(url_for('inventory.list_inventory'))
+    
+    # Handle the GET request or invalid form
+    # Usually we pre-populate in the template for modals, but if redirected:
+    return redirect(url_for('inventory.list_inventory'))
+
 @inventory.route('/inventory/delete/<int:med_id>')
 @login_required
 def delete_medicine(med_id):
