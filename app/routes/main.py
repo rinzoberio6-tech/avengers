@@ -9,16 +9,22 @@ main = Blueprint('main', __name__)
 
 @main.route('/system/reset', methods=['GET', 'POST'])
 def system_reset():
-    # Check if any users exist
-    user_count = User.query.count()
-    
+    try:
+        # Check if any users exist safely
+        user_count = db.session.query(User).count()
+    except Exception:
+        user_count = 0
+
     # If users exist, ONLY a logged-in Super Admin can use this via POST
     if user_count > 0:
         if not current_user.is_authenticated or current_user.role != 'Super Admin' or request.method == 'GET':
-            # Stealth: Don't even show an error, just go to login
             return redirect(url_for('auth.login'))
 
     try:
+        # Close all existing connections to avoid locks
+        db.session.remove()
+        db.engine.dispose()
+
         # Drop and Recreate tables
         db.drop_all()
         db.create_all()
@@ -28,18 +34,21 @@ def system_reset():
         super_admin = User(
             username='SuperAdmin',
             password=hashed_pw,
-            role='Super Admin'
+            role='Super Admin',
+            is_active=True
         )
         db.session.add(super_admin)
         db.session.commit()
 
         if current_user.is_authenticated:
             logout_user()
-            
+
         flash('System Initialized! Login with SuperAdmin / Super123', 'success')
         return redirect(url_for('auth.login'))
     except Exception as e:
         db.session.rollback()
+        print(f"Reset Error: {e}")
+        flash('An error occurred during reset. Check logs.', 'danger')
         return redirect(url_for('auth.login'))
 
 @main.route('/')
