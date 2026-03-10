@@ -6,6 +6,6 @@ services:
     startCommand: gunicorn wsgi:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.12
+        value: 3.11.8
       - key: SECRET_KEY
         generateValue: true
