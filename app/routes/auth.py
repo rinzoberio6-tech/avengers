@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, url_for, flash, redirect, request
+from flask import Blueprint, render_template, url_for, flash, redirect, request, make_response
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db, bcrypt
 from app.models import User, Barangay, Patient, Household, Visit, Sitio
@@ -486,7 +486,11 @@ def login():
         else:
             flash('Login Unsuccessful. Please check BHW Code and PIN', 'danger')
 
-    return render_template('auth/login.html', title='Login', admin_form=admin_form, bhw_form=bhw_form)
+    response = make_response(render_template('auth/login.html', title='Login', admin_form=admin_form, bhw_form=bhw_form))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @auth.route('/profile')
 @login_required
