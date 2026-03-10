@@ -457,7 +457,7 @@ def login():
     bhw_form = BHWLoginForm()
 
     # Handle Admin/Super Admin/Viewer Login
-    if 'username' in request.form and admin_form.validate_on_submit():
+    if 'admin_login' in request.form and admin_form.validate_on_submit():
         user = User.query.filter_by(username=admin_form.username.data).first()
         if user and user.password and bcrypt.check_password_hash(user.password, admin_form.password.data):
             if not user.is_active:
@@ -472,7 +472,7 @@ def login():
             flash('Login Unsuccessful. Please check username and password', 'danger')
 
     # Handle BHW Manual Login
-    if 'bhw_code' in request.form and bhw_form.validate_on_submit():
+    if 'bhw_login' in request.form and bhw_form.validate_on_submit():
         user = User.query.filter_by(bhw_code=bhw_form.bhw_code.data).first()
         if user and user.pin and bcrypt.check_password_hash(user.pin, bhw_form.pin.data):
             if not user.is_active:
