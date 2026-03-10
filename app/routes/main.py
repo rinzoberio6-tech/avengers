@@ -129,8 +129,15 @@ def get_analytics():
     if current_user.role == 'Super Admin':
         # 1. Line Graph: Global Consultations per month (Last 6 months)
         six_months_ago = datetime.now() - timedelta(days=180)
+        
+        # Use a cross-platform way to format dates
+        if db.engine.name == 'postgresql':
+            date_format = func.to_char(Consultation.date, 'YYYY-MM')
+        else:
+            date_format = func.strftime('%Y-%m', Consultation.date)
+
         consultations_by_month = db.session.query(
-            func.strftime('%Y-%m', Consultation.date).label('month'),
+            date_format.label('month'),
             func.count(Consultation.id)
         ).filter(Consultation.date >= six_months_ago)\
          .group_by('month').order_by('month').all()
@@ -179,8 +186,14 @@ def get_analytics():
     elif current_user.role == 'Admin':
         # 1. Line Graph: Barangay Consultations per month
         six_months_ago = datetime.now() - timedelta(days=180)
+        
+        if db.engine.name == 'postgresql':
+            date_format = func.to_char(Consultation.date, 'YYYY-MM')
+        else:
+            date_format = func.strftime('%Y-%m', Consultation.date)
+
         consultations_by_month = db.session.query(
-            func.strftime('%Y-%m', Consultation.date).label('month'),
+            date_format.label('month'),
             func.count(Consultation.id)
         ).join(Patient).join(Household)\
          .filter(Household.barangay_id == current_user.barangay_id, Consultation.date >= six_months_ago)\
